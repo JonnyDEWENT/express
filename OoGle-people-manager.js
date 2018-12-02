@@ -32,25 +32,38 @@ if (!fs.existsSync('./programmers.json')) {
 }
 
 // Build our routes
-
+//Get all
 app.get('/', (req, res) => {
   res.send(myDB);
+  console.log("all");
 });
 
+//Get one employee
 app.get('/:id', (req, res) => {
   const id = req.params.id;
   var employee = searchForEmployeeById(id);
-  res.send(employee);
+  if(employee.length != 0)
+    res.send(employee);
+  else
+    res.send("EMPLOYEE NOT FOUND!\n\n")
+  console.log("one");
 });
 
+
+// Update a particular attribute
 app.put('/:id/:att/:value', (req, res) => {
   const id = req.params.id;
   const attribute = req.params.att;
   const value = req.params.value;
   
   var employee = searchForEmployeeById(id);
-  employee[attribute] = value;
-  res.send(employee);
+
+  if(employee.length != 0){
+    employee[attribute] = value;
+    res.send(employee);
+  }
+  else
+    res.send("EMPLOYEE NOT FOUND!\nFAILED TO UPDATE\n\n")
 });
 
 
@@ -58,20 +71,36 @@ app.put('/:id/:att/:value', (req, res) => {
 app.post('/:file', (req, res) => {
   const filename = "./" + req.params.file;
   // const filename = './programmers.json';
+  try {
   const empInfo = require(filename);
   const body = req.body; // Hold your JSON in here!
   myDB.push(empInfo);
   // body.push(empInfo);
 
   res.send(myDB);
-});
-
-app.get('/', (req, res) => {
-  res.send(`Invalid get request`);
-  console.log("Invalid get request");
+  }
+  catch(ex){
+    res.send("ERROR FILE NOT FOUND!!!\n\n");
+  }
 });
 
 // IMPLEMENT A ROUTE TO HANDLE ALL OTHER ROUTES AND RETURN AN ERROR MESSAGE
+app.get('*', (req, res) => {
+  res.send(`INVALID GET REQUEST!!\n\n`);
+  console.log("Invalid get request");
+});
+
+app.put('*', (req, res) => {
+  res.send(`INVALID PUT REQUEST!!\n\n`);
+  console.log("Invalid put request");
+});
+
+app.post('*', (req, res) => {
+  res.send(`INVALID POST REQUEST!!\n\n`);
+  console.log("Invalid post request");
+});
+
+
 
 app.listen(port, () => {
   console.log(`She's alive on port ${port}`);
@@ -80,9 +109,10 @@ app.listen(port, () => {
 function searchForEmployeeById(id){
   var employee = [];
   for(var i in myDB){
-    if (myDB[i].SID === id)
+    if (myDB[i].SID === id){
     console.log("found");
       return myDB[i];
+    }
   }
 return [];
 }
